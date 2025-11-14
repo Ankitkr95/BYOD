@@ -1,0 +1,158 @@
+{% extends 'auth_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign Up - BYOD Security System{% endblock %}
+
+{% block content %}
+<div>
+    <div class="text-center mb-8">
+        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100 mb-4">
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Create your account
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Or
+            <a href="{% url 'users:login' %}" class="font-medium text-primary-600 hover:text-primary-500">
+                sign in to existing account
+            </a>
+        </p>
+    </div>
+    
+    <form class="space-y-4" method="post">
+        {% csrf_token %}
+        
+        <!-- Username -->
+        <div>
+            <label for="{{ form.username.id_for_label }}" class="form-label block mb-2">Username</label>
+            <input id="{{ form.username.id_for_label }}" 
+                   name="{{ form.username.name }}" 
+                   type="text" 
+                   required 
+                   class="form-input" 
+                   placeholder="Choose a username"
+                   value="{{ form.username.value|default:'' }}">
+            {% if form.username.errors %}
+                <p class="form-error mt-1">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- First Name -->
+        <div>
+            <label for="{{ form.first_name.id_for_label }}" class="form-label block mb-2">First Name</label>
+            <input id="{{ form.first_name.id_for_label }}" 
+                   name="{{ form.first_name.name }}" 
+                   type="text" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter your first name"
+                   value="{{ form.first_name.value|default:'' }}">
+            {% if form.first_name.errors %}
+                <p class="form-error mt-1">{{ form.first_name.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Last Name -->
+        <div>
+            <label for="{{ form.last_name.id_for_label }}" class="form-label block mb-2">Last Name</label>
+            <input id="{{ form.last_name.id_for_label }}" 
+                   name="{{ form.last_name.name }}" 
+                   type="text" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter your last name"
+                   value="{{ form.last_name.value|default:'' }}">
+            {% if form.last_name.errors %}
+                <p class="form-error mt-1">{{ form.last_name.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label for="{{ form.email.id_for_label }}" class="form-label block mb-2">Email Address</label>
+            <input id="{{ form.email.id_for_label }}" 
+                   name="{{ form.email.name }}" 
+                   type="email" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter your email address"
+                   value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}
+                <p class="form-error mt-1">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Role -->
+        <div>
+            <label for="{{ form.role.id_for_label }}" class="form-label block mb-2">Role</label>
+            <select id="{{ form.role.id_for_label }}" 
+                    name="{{ form.role.name }}" 
+                    required 
+                    class="form-input">
+                {% for value, label in form.role.field.choices %}
+                    <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% if form.role.errors %}
+                <p class="form-error mt-1">{{ form.role.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div>
+            <label for="{{ form.password1.id_for_label }}" class="form-label block mb-2">Password</label>
+            <input id="{{ form.password1.id_for_label }}" 
+                   name="{{ form.password1.name }}" 
+                   type="password" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter a secure password">
+            {% if form.password1.errors %}
+                <p class="form-error mt-1">{{ form.password1.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+            <label for="{{ form.password2.id_for_label }}" class="form-label block mb-2">Confirm Password</label>
+            <input id="{{ form.password2.id_for_label }}" 
+                   name="{{ form.password2.name }}" 
+                   type="password" 
+                   required 
+                   class="form-input" 
+                   placeholder="Confirm your password">
+            {% if form.password2.errors %}
+                <p class="form-error mt-1">{{ form.password2.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="pt-4">
+            <button type="submit" class="btn btn-primary w-full h-12 text-base">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                </svg>
+                Create Account
+            </button>
+        </div>
+    </form>
+    
+    <!-- Role descriptions -->
+    <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">User Roles:</h4>
+        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+            <div><strong>Student:</strong> Register devices, view personal activity</div>
+            <div><strong>Teacher:</strong> Monitor students, generate reports</div>
+            <div><strong>Admin:</strong> Full system access and management</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

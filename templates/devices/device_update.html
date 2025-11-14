@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ device.name }} - BYOD Security System{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Page header -->
+    <div class="mb-6">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+                <li>
+                    <div>
+                        <a href="{% url 'devices:device_list' %}" class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
+                            <svg class="flex-shrink-0 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="sr-only">Devices</span>
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="flex-shrink-0 h-5 w-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="{% url 'devices:device_list' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                            My Devices
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="flex-shrink-0 h-5 w-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="{% url 'devices:device_detail' device.pk %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                            {{ device.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="flex-shrink-0 h-5 w-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400">Edit</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+        
+        <div class="mt-4">
+            <h1 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
+                Edit Device: {{ device.name }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Update your device information and settings
+            </p>
+        </div>
+    </div>
+
+    <!-- Update Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                Device Information
+            </h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Make changes to your device information. All fields are required.
+            </p>
+        </div>
+        
+        <form method="post" class="card-content space-y-6">
+            {% csrf_token %}
+            
+            <!-- Device Name -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="form-label">
+                    Device Name *
+                </label>
+                <input id="{{ form.name.id_for_label }}" 
+                       name="{{ form.name.name }}" 
+                       type="text" 
+                       required 
+                       class="form-input {% if form.name.errors %}border-red-300 dark:border-red-600{% endif %}"
+                       value="{{ form.name.value|default:'' }}"
+                       placeholder="e.g., John's MacBook Pro">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Choose a descriptive name to easily identify this device
+                </p>
+                {% if form.name.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.name.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Device Type -->
+            <div>
+                <label for="{{ form.device_type.id_for_label }}" class="form-label">
+                    Device Type *
+                </label>
+                <select id="{{ form.device_type.id_for_label }}" 
+                        name="{{ form.device_type.name }}" 
+                        required 
+                        class="form-input {% if form.device_type.errors %}border-red-300 dark:border-red-600{% endif %}">
+                    <option value="">Select device type</option>
+                    {% for value, label in form.device_type.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if form.device_type.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.device_type.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.device_type.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Operating System -->
+            <div>
+                <label for="{{ form.operating_system.id_for_label }}" class="form-label">
+                    Operating System *
+                </label>
+                <select id="{{ form.operating_system.id_for_label }}" 
+                        name="{{ form.operating_system.name }}" 
+                        required 
+                        class="form-input {% if form.operating_system.errors %}border-red-300 dark:border-red-600{% endif %}">
+                    <option value="">Select operating system</option>
+                    {% for value, label in form.operating_system.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if form.operating_system.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.operating_system.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.operating_system.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- MAC Address -->
+            <div>
+                <label for="{{ form.mac_address.id_for_label }}" class="form-label">
+                    MAC Address *
+                </label>
+                <input id="{{ form.mac_address.id_for_label }}" 
+                       name="{{ form.mac_address.name }}" 
+                       type="text" 
+                       required 
+                       class="form-input font-mono {% if form.mac_address.errors %}border-red-300 dark:border-red-600{% endif %}"
+                       value="{{ form.mac_address.value|default:'' }}"
+                       placeholder="XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Enter your device's MAC address. You can find this in your network settings.
+                </p>
+                {% if form.mac_address.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.mac_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Current Information Display -->
+            <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4">
+                <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Current Information</h4>
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Registered</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ device.registered_at|date:"F j, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Last Seen</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ device.last_seen|date:"F j, Y g:i A" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Compliance Status</dt>
+                        <dd class="mt-1">
+                            {% if device.compliance_status %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    Compliant
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    Non-Compliant
+                                </span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Owner</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ device.user.get_full_name|default:device.user.username }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'devices:device_detail' device.pk %}" class="btn btn-secondary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Cancel
+                </a>
+                
+                <button type="submit" class="btn btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Update Device
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Warning Notice -->
+    <div class="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Important Notice
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                    <p>
+                        Changing the MAC address will require re-verification of your device's compliance status. 
+                        Network access may be temporarily restricted until compliance is confirmed.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

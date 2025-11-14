@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Device - BYOD Security System{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Page header -->
+    <div class="mb-6">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+                <li>
+                    <div>
+                        <a href="{% url 'devices:device_list' %}" class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
+                            <svg class="flex-shrink-0 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="sr-only">Devices</span>
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="flex-shrink-0 h-5 w-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="{% url 'devices:device_list' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                            My Devices
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="flex-shrink-0 h-5 w-5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400">Register Device</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+        
+        <div class="mt-4">
+            <h1 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
+                Register New Device
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Add a new device to your account for network access and compliance tracking
+            </p>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                Device Information
+            </h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Please provide accurate information about your device for proper identification and security compliance.
+            </p>
+        </div>
+        
+        <form method="post" class="card-content space-y-6">
+            {% csrf_token %}
+            
+            <!-- Target User (Admin Only) -->
+            {% if form.target_user %}
+            <div>
+                <label for="{{ form.target_user.id_for_label }}" class="form-label">
+                    {{ form.target_user.label }}
+                </label>
+                <select id="{{ form.target_user.id_for_label }}" 
+                        name="{{ form.target_user.name }}" 
+                        class="form-input {% if form.target_user.errors %}border-red-300 dark:border-red-600{% endif %}">
+                    <option value="">Register for myself</option>
+                    {% for user in form.target_user.field.queryset %}
+                        <option value="{{ user.pk }}" {% if form.target_user.value == user.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ user.get_full_name|default:user.username }} ({{ user.profile.get_role_display }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ form.target_user.help_text }}
+                </p>
+                {% if form.target_user.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.target_user.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Approval Info Banner -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            Device Approval Process
+                        </h3>
+                        <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                            {% if user.profile.role == 'student' %}
+                            <p>Your device will require approval from a teacher or administrator before you can use it on the network.</p>
+                            {% elif user.profile.role == 'teacher' %}
+                            <p>Your own devices will be automatically approved. Devices registered for students will require approval.</p>
+                            {% elif user.profile.role == 'admin' %}
+                            <p>As an administrator, all devices you register will be automatically approved and activated.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Device Name -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="form-label">
+                    Device Name *
+                </label>
+                <input id="{{ form.name.id_for_label }}" 
+                       name="{{ form.name.name }}" 
+                       type="text" 
+                       required 
+                       class="form-input {% if form.name.errors %}border-red-300 dark:border-red-600{% endif %}"
+                       value="{{ form.name.value|default:'' }}"
+                       placeholder="e.g., John's MacBook Pro">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Choose a descriptive name to easily identify this device
+                </p>
+                {% if form.name.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.name.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Device Type -->
+            <div>
+                <label for="{{ form.device_type.id_for_label }}" class="form-label">
+                    Device Type *
+                </label>
+                <select id="{{ form.device_type.id_for_label }}" 
+                        name="{{ form.device_type.name }}" 
+                        required 
+                        class="form-input {% if form.device_type.errors %}border-red-300 dark:border-red-600{% endif %}">
+                    <option value="">Select device type</option>
+                    {% for value, label in form.device_type.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if form.device_type.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.device_type.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.device_type.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Operating System -->
+            <div>
+                <label for="{{ form.operating_system.id_for_label }}" class="form-label">
+                    Operating System *
+                </label>
+                <select id="{{ form.operating_system.id_for_label }}" 
+                        name="{{ form.operating_system.name }}" 
+                        required 
+                        class="form-input {% if form.operating_system.errors %}border-red-300 dark:border-red-600{% endif %}">
+                    <option value="">Select operating system</option>
+                    {% for value, label in form.operating_system.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if form.operating_system.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.operating_system.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.operating_system.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- MAC Address -->
+            <div>
+                <label for="{{ form.mac_address.id_for_label }}" class="form-label">
+                    MAC Address *
+                </label>
+                <input id="{{ form.mac_address.id_for_label }}" 
+                       name="{{ form.mac_address.name }}" 
+                       type="text" 
+                       required 
+                       class="form-input font-mono {% if form.mac_address.errors %}border-red-300 dark:border-red-600{% endif %}"
+                       value="{{ form.mac_address.value|default:'' }}"
+                       placeholder="XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Enter your device's MAC address. You can find this in your network settings.
+                </p>
+                {% if form.mac_address.errors %}
+                    <div class="form-error mt-1">
+                        {{ form.mac_address.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Help Section -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            How to find your MAC address
+                        </h3>
+                        <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>Windows:</strong> Open Command Prompt and type <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">ipconfig /all</code></li>
+                                <li><strong>macOS:</strong> Go to System Preferences → Network → Advanced → Hardware</li>
+                                <li><strong>Linux:</strong> Run <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">ifconfig</code> or <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">ip link show</code></li>
+                                <li><strong>Mobile:</strong> Check in Settings → About → Status/Hardware Info</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                <a href="{% url 'devices:device_list' %}" class="btn btn-secondary px-4 py-2">
+                    <svg class="w-4 h-4 mr-2 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Cancel
+                </a>
+                
+                <button type="submit" class="btn btn-primary px-4 py-2">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Register Device
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Security Notice
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                    <p>
+                        Your device will be subject to security compliance checks once registered. 
+                        Ensure your device meets the institution's security requirements for network access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

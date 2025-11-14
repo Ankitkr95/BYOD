@@ -1,0 +1,144 @@
+<!-- Sidebar Navigation -->
+<div class="flex flex-col h-full">
+    <!-- Logo and brand -->
+    <div class="flex items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <span class="ml-3 text-lg font-semibold text-gray-900 dark:text-white">BYOD Security</span>
+        </div>
+    </div>
+    
+    <!-- Navigation menu -->
+    <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard:home' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors nav-link-inactive">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
+            </svg>
+            Dashboard
+        </a>
+        
+        <!-- Devices -->
+        <div class="space-y-1">
+            <a href="{% url 'devices:device_list' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if request.resolver_match.app_name == 'devices' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                My Devices
+            </a>
+            
+            {% if request.resolver_match.app_name == 'devices' %}
+            <div class="ml-8 space-y-1">
+                <a href="{% url 'devices:device_register' %}" class="block px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    Register Device
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Access Requests (Teachers and Admins) -->
+        {% if user.is_authenticated and user.profile.role in 'teacher,admin' %}
+        <a href="{% url 'devices:access_requests' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if 'access_request' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Access Requests
+            <span id="access-requests-badge" class="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full" style="display: none;"></span>
+        </a>
+        {% endif %}
+        
+        <!-- Notifications -->
+        <a href="{% url 'notifications:list' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if request.resolver_match.app_name == 'notifications' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            Notifications
+            <span id="notifications-badge" class="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full" style="display: none;"></span>
+        </a>
+        
+        <!-- Productivity (Teachers and Admins) -->
+        {% if user.is_authenticated and user.profile.role in 'teacher,admin' %}
+        <div class="space-y-1">
+            <a href="{% url 'productivity:activity_logs' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if request.resolver_match.app_name == 'productivity' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 00-2 2h2a2 2 0 002-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                Activity & Reports
+            </a>
+            
+            {% if request.resolver_match.app_name == 'productivity' %}
+            <div class="ml-8 space-y-1">
+                <a href="{% url 'productivity:reports' %}" class="block px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    Performance Reports
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Security (Admins only) -->
+        {% if user.is_authenticated and user.userprofile.role == 'admin' %}
+        <div class="space-y-1">
+            <a href="{% url 'security:access_rules' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if request.resolver_match.app_name == 'security' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Security & Access
+            </a>
+            
+            {% if request.resolver_match.app_name == 'security' %}
+            <div class="ml-8 space-y-1">
+                <a href="{% url 'security:session_monitor' %}" class="block px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    Session Monitor
+                </a>
+                <a href="{% url 'security:security_alerts' %}" class="block px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    Security Alerts
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Profile -->
+        <a href="{% url 'users:profile' %}" class="nav-link group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {% if request.resolver_match.app_name == 'users' and 'profile' in request.resolver_match.url_name %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            Profile
+        </a>
+    </nav>
+    
+    <!-- User info at bottom -->
+    <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+        {% if user.is_authenticated %}
+        <div class="flex items-center">
+            <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                <span class="text-white text-sm font-medium">
+                    {{ user.first_name|first|default:user.username|first|upper }}
+                </span>
+            </div>
+            <div class="ml-3 min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {{ user.get_full_name|default:user.username }}
+                </p>
+                {% if user.userprofile %}
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ user.userprofile.get_role_display }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <a href="{% url 'users:login' %}" class="btn btn-primary btn-sm w-full">
+                Sign In
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,96 @@
+{% extends 'auth_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign In - BYOD Security System{% endblock %}
+
+{% block content %}
+<div>
+    <div class="text-center mb-8">
+        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100 mb-4">
+            <svg class="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Sign in to your account
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Or
+            <a href="{% url 'users:signup' %}" class="font-medium text-primary-600 hover:text-primary-500">
+                create a new account
+            </a>
+        </p>
+    </div>
+    
+    <form class="space-y-6" method="post">
+        {% csrf_token %}
+        
+        <div>
+            <label for="{{ form.username.id_for_label }}" class="form-label block mb-2">Username</label>
+            <input id="{{ form.username.id_for_label }}" 
+                   name="{{ form.username.name }}" 
+                   type="text" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter your username"
+                   value="{{ form.username.value|default:'' }}">
+            {% if form.username.errors %}
+                <p class="form-error mt-1">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="{{ form.password.id_for_label }}" class="form-label block mb-2">Password</label>
+            <input id="{{ form.password.id_for_label }}" 
+                   name="{{ form.password.name }}" 
+                   type="password" 
+                   required 
+                   class="form-input" 
+                   placeholder="Enter your password">
+            {% if form.password.errors %}
+                <p class="form-error mt-1">{{ form.password.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                    Remember me
+                </label>
+            </div>
+
+            <div class="text-sm">
+                <a href="#" class="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot password?
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary w-full h-12 text-base">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                </svg>
+                Sign in
+            </button>
+        </div>
+    </form>
+    
+    <!-- Demo credentials -->
+    <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Demo Accounts:</h4>
+        <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+            <div><strong>Admin:</strong> admin / admin123</div>
+            <div><strong>Teacher:</strong> teacher / teacher123</div>
+            <div><strong>Student:</strong> student / student123</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

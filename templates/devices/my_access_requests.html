@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}My Access Requests - BYOD Security{% endblock %}
+
+{% block page_header %}
+<div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 lg:px-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">My Access Requests</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track the status of your device access requests</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="card">
+            <div class="card-content">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ pending_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-content">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Approved</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ approved_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-content">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-red-600 dark:text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Rejected</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ rejected_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Access Requests List -->
+    {% if access_requests %}
+        {% for request in access_requests %}
+        <div class="card">
+            <div class="card-content">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0">
+                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ request.device.name }}
+                                </h3>
+                                <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                    <span>{{ request.device.get_device_type_display }}</span>
+                                    <span>•</span>
+                                    <span>{{ request.device.get_operating_system_display }}</span>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                    Requested {{ request.requested_at|timesince }} ago
+                                </p>
+                                
+                                {% if request.status == 'approved' and request.approved_by %}
+                                <p class="mt-2 text-sm text-green-600 dark:text-green-400">
+                                    Approved by {{ request.approved_by.get_full_name|default:request.approved_by.username }} on {{ request.approved_at|date:"M d, Y" }}
+                                </p>
+                                {% if request.notes %}
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                    Notes: {{ request.notes }}
+                                </p>
+                                {% endif %}
+                                {% elif request.status == 'rejected' and request.approved_by %}
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+                                    Rejected by {{ request.approved_by.get_full_name|default:request.approved_by.username }} on {{ request.approved_at|date:"M d, Y" }}
+                                </p>
+                                {% if request.rejection_reason %}
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                    Reason: {{ request.rejection_reason }}
+                                </p>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 ml-4">
+                        {% if request.status == 'pending' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                            Pending
+                        </span>
+                        {% elif request.status == 'approved' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Approved
+                        </span>
+                        {% elif request.status == 'rejected' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                            Rejected
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card">
+            <div class="card-content text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No access requests</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You haven't submitted any device access requests yet.</p>
+                <div class="mt-6">
+                    <a href="{% url 'devices:device_register' %}" class="btn btn-primary btn-md">
+                        Register a Device
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

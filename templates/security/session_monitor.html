@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Session Monitor - BYOD Security{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Session Monitor</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Real-time monitoring of user sessions and network activity</p>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="refreshStats()" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+            <form method="post" action="{% url 'security:cleanup_sessions' %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="timeout_minutes" value="30">
+                <button type="submit" 
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                        onclick="return confirm('Clean up expired sessions?')">
+                    <i class="fas fa-broom mr-2"></i>Cleanup
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 dark:bg-green-800">
+                    <i class="fas fa-users text-green-600 dark:text-green-300"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Sessions</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white" id="active-sessions">{{ active_sessions }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
+                    <i class="fas fa-calendar-day text-blue-600 dark:text-blue-300"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Sessions Today</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white" id="sessions-today">{{ sessions_today }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-800">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-300"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Violations Today</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white" id="violations-today">{{ violations_today }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-800">
+                    <i class="fas fa-chart-line text-purple-600 dark:text-purple-300"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sessions</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_sessions }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-32">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex-1 min-w-32">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User</label>
+                <input type="text" name="user" value="{{ current_filters.user }}" 
+                       placeholder="Search username" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            </div>
+            <div class="flex-1 min-w-32">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Device</label>
+                <input type="text" name="device" value="{{ current_filters.device }}" 
+                       placeholder="Search device" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            </div>
+            <div class="flex-1 min-w-32">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
+                <input type="date" name="date_from" value="{{ current_filters.date_from }}" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            </div>
+            <div class="flex-1 min-w-32">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
+                <input type="date" name="date_to" value="{{ current_filters.date_to }}" 
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Filter
+                </button>
+                <a href="{% url 'security:session_monitor' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md transition-colors">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sessions Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {% if sessions %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Device</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Login Time</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">IP Address</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Violations</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                        {% for session in sessions %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full mr-3 
+                                            {% if session.user.profile.role == 'admin' %}bg-red-500
+                                            {% elif session.user.profile.role == 'teacher' %}bg-blue-500
+                                            {% else %}bg-green-500{% endif %}">
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ session.user.username }}</div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ session.user.profile.get_role_display }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-white">{{ session.device.name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ session.device.get_device_type_display }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if session.status == 'active' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                            <i class="fas fa-circle mr-1 text-xs"></i>Active
+                                        </span>
+                                    {% elif session.status == 'violation' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                            <i class="fas fa-exclamation-triangle mr-1 text-xs"></i>Violation
+                                        </span>
+                                    {% elif session.status == 'expired' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                            <i class="fas fa-clock mr-1 text-xs"></i>Expired
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            {{ session.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ session.login_time|date:"M d, Y H:i" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {% with duration=session.duration %}
+                                        {% if duration.days %}{{ duration.days }}d {% endif %}
+                                        {{ duration.seconds|floatformat:0|add:"0"|time:"H:i:s" }}
+                                    {% endwith %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ session.ip_address }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if session.violation_count > 0 %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                            {{ session.violation_count }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <a href="{% url 'security:session_detail' session.id %}" 
+                                           class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if session.is_active %}
+                                            <form method="post" action="{% url 'security:end_session' session.id %}" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" 
+                                                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                        title="End Session"
+                                                        onclick="return confirm('End this session?')">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                {% include 'includes/pagination.html' %}
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-desktop text-4xl text-gray-400 dark:text-gray-600 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Sessions Found</h3>
+                <p class="text-gray-500 dark:text-gray-400">No user sessions match your current filters.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function refreshStats() {
+    fetch('{% url "security:session_stats_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('active-sessions').textContent = data.active_sessions;
+            document.getElementById('sessions-today').textContent = data.total_sessions_today;
+            document.getElementById('violations-today').textContent = data.violations_today;
+        })
+        .catch(error => console.error('Error refreshing stats:', error));
+}
+
+// Auto-refresh stats every 30 seconds
+setInterval(refreshStats, 30000);
+</script>
+{% endblock %}
