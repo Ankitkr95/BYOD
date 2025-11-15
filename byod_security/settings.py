@@ -222,24 +222,35 @@ LOGGING = {
             'style': '{',
         },
     },
+    # 'handlers': {
+    #     'file': {
+    #         'level': 'INFO',
+    #         'class': 'logging.FileHandler',
+    #         'filename': BASE_DIR / 'logs' / 'security.log',
+    #         'formatter': 'verbose',
+    #     },
+    #     'console': {
+    #         'level': 'DEBUG',
+    #         'class': 'logging.StreamHandler',
+    #         'formatter': 'simple',
+    #     },
+    # },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'security.log',
-            'formatter': 'verbose',
-        },
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
         },
     },
     'loggers': {
-        'security.middleware': {
-            'handlers': ['file', 'console'],
+        'django': {
+            'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
         },
     },
+    # 'loggers': {
+    #     'security.middleware': {
+    #         'handlers': ['file', 'console'],
+    #         'level': 'INFO',
+    #         'propagate': True,
+    #     },
+    # },
 }
