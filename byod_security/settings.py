@@ -259,3 +259,6 @@ LOGGING = {
     #     },
     # },
 }
+CSRF_TRUSTED_ORIGINS = [
+    'https://byod-o0g9.onrender.com',
+]
